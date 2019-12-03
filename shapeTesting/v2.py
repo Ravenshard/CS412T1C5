@@ -23,11 +23,11 @@ h, w, d = 0, 0, 0
 # c2Square = cv2.imread('./shapeTesting/c2Square.png', 0)
 # c1Circle = cv2.imread('./shapeTesting/c1Circle.png', 0)
 # c2Circle = cv2.imread('./shapeTesting/c2Circle.png', 0)
-c1Triange = cv2.imread('tri3.png', 0)
+c1Triange = cv2.imread('c1Triangle.png', 0)
 c2Triange = cv2.imread('./shapeTesting/c2Triangle.png', 0)
-c1Square = cv2.imread('sqr3.png', 0)
+c1Square = cv2.imread('c1Square.png', 0)
 c2Square = cv2.imread('./shapeTesting/c2Square.png', 0)
-c1Circle = cv2.imread('cir3.png', 0)
+c1Circle = cv2.imread('c1Circle.png', 0)
 c2Circle = cv2.imread('./shapeTesting/c2Circle.png', 0)
 cntG = None
 cntR1 = None
@@ -85,7 +85,6 @@ def compareImages(cntT, cntS, cntC, cntI):
     retS = cv2.matchShapes(cntI,cntS,1,0.0)
     retC = cv2.matchShapes(cntI,cntC,1,0.0)
     best = min(retT, retS, retC)
-    print("retT: {} retS: {} retC: {}".format(retT, retS, retC))
     if best == retC: return "circle"
     if best == retS: return "square"
     if best == retT: return "triangle"
@@ -179,13 +178,13 @@ def cam1red_callback(msg):
     return
 
 def cam1green_callback(msg):
-    global bridge, green_mask, h, w, d, cntG
+    global bridge, green_mask, cntG
     image = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    upper_green = numpy.array([147, 255, 255])
-    #lower_green = numpy.array([56, 43, 90])
-    lower_green = numpy.array([77, 100, 100])
+    h, w, d = image.shape
+    upper_green = numpy.array([149, 255, 255])
+    lower_green = numpy.array([57, 80, 0])
     green_mask = cv2.inRange(hsv, lower_green, upper_green)
     blur = cv2.medianBlur(green_mask, 7)
     blur[0:h / 4, 0:w] = 0
@@ -193,9 +192,9 @@ def cam1green_callback(msg):
     green_mask = blur
     thresh = cv2.threshold(blur, 250, 255, 0)[1]
     image2, contours, hierarchy = cv2.findContours(thresh, 2, 1)
-    cntG = contours[0]
-    # if len(contours) > 0:
-        # cntG = contours[0]
+    # cntG = contours[0]
+    if len(contours) > 0:
+        cntG = contours[0]
     return
 
 def count_objects(mask, threshold=1000, canvas=None):
