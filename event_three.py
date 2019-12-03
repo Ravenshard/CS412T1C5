@@ -16,7 +16,7 @@ import event_two
 import traceback
 
 import sys
-sys.path.insert(1, '/home/malcolm/Documents/CMPUT_412/Competition/CS412T1C4/shapeTesting')
+sys.path.insert(1, '/home/malcolm/Documents/CMPUT_412/Competition/CS412T1C5/shapeTesting')
 import v2
 
 global shutdown_requested

@@ -22,7 +22,7 @@ from kobuki_msgs.msg import Sound
 from geometry_msgs.msg import Point
 import event_two
 import sys
-sys.path.insert(1, '/home/malcolm/Documents/CMPUT_412/Competition/CS412T1C4/shapeTesting')
+sys.path.insert(1, '/home/malcolm/Documents/CMPUT_412/Competition/CS412T1C5/shapeTesting')
 import v2
 import traceback
 
