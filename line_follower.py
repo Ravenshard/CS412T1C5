@@ -214,7 +214,7 @@ class FollowLine(smach.State):
                 if RM['m00'] > 0:
                     rx = int(RM['m10'] / RM['m00'])
                     ry = int(RM['m01'] / RM['m00'])
-                    #print(str(red_pixel_count)+" "+str(rx))
+                    print(str(red_pixel_count)+" "+str(rx))
 
                     # Check special case of
                     if red_pixel_count > 1000 and rx > 140 and red_count == 3:

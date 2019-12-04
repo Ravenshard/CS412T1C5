@@ -337,12 +337,15 @@ class Push(smach.State):
         # self.callbacks.left_bumper_pressed
         # self.callbacks.middle_bumper_pressed
         # self.callbacks.right_bumper_pressed
+        self.twist.angular.z = 0
+        self.twist.linear.x = 0
+
         # Get the current x position, we'll move half a meter backwards
         initX = self.callbacks.bot_odom_position.x
         currX = self.callbacks.bot_odom_position.x
         # Timer incase we can't backup or are taking too long
         start = time.time()
-        duration = 10
+        duration = 5  # TODO previous was 10
         # move forwards while moved < 0.2 meters and taking < 3 secs
         detected_first_press = False
         returnState = 'reverse'
@@ -500,6 +503,16 @@ class Box2(smach.State):
             w: 0.126460972722
         '''
 
+        self.intermediate_target = MoveBaseGoal()
+        self.intermediate_target.target_pose.header.frame_id = "map"
+        self.intermediate_target.target_pose.header.stamp = rospy.Time.now()
+        self.intermediate_target.target_pose.pose.position.x = -1.52175857821
+        self.intermediate_target.target_pose.pose.position.y = -1.38008777639
+        self.intermediate_target.target_pose.pose.orientation.x = 0.0
+        self.intermediate_target.target_pose.pose.orientation.y = 0.0
+        self.intermediate_target.target_pose.pose.orientation.z = -0.570304326137
+        self.intermediate_target.target_pose.pose.orientation.w = 0.821433488232
+
         self.target = MoveBaseGoal()
         self.target.target_pose.header.frame_id = "map"
         self.target.target_pose.header.stamp = rospy.Time.now()
@@ -521,6 +534,8 @@ class Box2(smach.State):
     def execute(self, userdata):
         global shutdown_requested
 
+        self.client.send_goal(self.intermediate_target)
+        self.client.wait_for_result()
         self.client.send_goal(self.target)
         self.client.wait_for_result()
         print("Goal reached")
@@ -673,6 +688,16 @@ class Box8(smach.State):
             w: 0.168898538375
         '''
 
+        self.intermediate_target = MoveBaseGoal()
+        self.intermediate_target.target_pose.header.frame_id = "map"
+        self.intermediate_target.target_pose.header.stamp = rospy.Time.now()
+        self.intermediate_target.target_pose.pose.position.x = -0.472800379645
+        self.intermediate_target.target_pose.pose.position.y = -3.4958956586
+        self.intermediate_target.target_pose.pose.orientation.x = 0.0
+        self.intermediate_target.target_pose.pose.orientation.y = 0.0
+        self.intermediate_target.target_pose.pose.orientation.z = 0.153404103418
+        self.intermediate_target.target_pose.pose.orientation.w = 0.98816353963
+
         self.target = MoveBaseGoal()
         self.target.target_pose.header.frame_id = "map"
         self.target.target_pose.header.stamp = rospy.Time.now()
@@ -694,6 +719,8 @@ class Box8(smach.State):
     def execute(self, userdata):
         global shutdown_requested
 
+        self.client.send_goal(self.intermediate_target)
+        self.client.wait_for_result()
         self.client.send_goal(self.target)
         self.client.wait_for_result()
         print("Goal reached")
@@ -711,18 +738,33 @@ class Return(smach.State):
         # self.client.wait_for_server()
 
         '''
+        target1
         position: 
-            x: -1.10226629048
-            y: -2.87965063952
+            x: -1.52175857821
+            y: -1.38008777639
             z: 0.0
         orientation: 
             x: 0.0
             y: 0.0
-            z: -0.548724477596
-            w: 0.83600325818
+            z: -0.570304326137
+            w: 0.821433488232
         '''
 
         '''
+        target2
+        position: 
+            x: -0.472800379645
+            y: -3.4958956586
+            z: 0.0
+        orientation: 
+            x: 0.0
+            y: 0.0
+            z: 0.153404103418
+            w: 0.98816353963
+        '''
+
+        '''
+        target3
         position: 
             x: 0.857642769587
             y: -3.15814141971
@@ -733,28 +775,39 @@ class Return(smach.State):
             z: 0.168549594567
             w: 0.985693174457
         '''
-        self.target0 = MoveBaseGoal()
-        self.target0.target_pose.header.frame_id = "map"
-        self.target0.target_pose.header.stamp = rospy.Time.now()
-        self.target0.target_pose.pose.position.x = -1.10226629048
-        self.target0.target_pose.pose.position.y = -2.87965063952
-        self.target0.target_pose.pose.orientation.x = 0.0
-        self.target0.target_pose.pose.orientation.y = 0.0
-        self.target0.target_pose.pose.orientation.z = -0.548724477596
-        self.target0.target_pose.pose.orientation.w = 0.83600325818
+        self.target1 = MoveBaseGoal()
+        self.target1.target_pose.header.frame_id = "map"
+        self.target1.target_pose.header.stamp = rospy.Time.now()
+        self.target1.target_pose.pose.position.x = -1.52175857821
+        self.target1.target_pose.pose.position.y = -1.38008777639
+        self.target1.target_pose.pose.orientation.x = 0.0
+        self.target1.target_pose.pose.orientation.y = 0.0
+        self.target1.target_pose.pose.orientation.z = -0.570304326137
+        self.target1.target_pose.pose.orientation.w = 0.821433488232
 
-        self.target = MoveBaseGoal()
-        self.target.target_pose.header.frame_id = "map"
-        self.target.target_pose.header.stamp = rospy.Time.now()
-        self.target.target_pose.pose.position.x = 0.857642769587
-        self.target.target_pose.pose.position.y = -3.15814141971
-        self.target.target_pose.pose.orientation.x = 0.0
-        self.target.target_pose.pose.orientation.y = 0.0
-        self.target.target_pose.pose.orientation.z = 0.168549594567
-        self.target.target_pose.pose.orientation.w = 0.985693174457
+        self.target2 = MoveBaseGoal()
+        self.target2.target_pose.header.frame_id = "map"
+        self.target2.target_pose.header.stamp = rospy.Time.now()
+        self.target2.target_pose.pose.position.x = -0.472800379645
+        self.target2.target_pose.pose.position.y = -3.4958956586
+        self.target2.target_pose.pose.orientation.x = 0.0
+        self.target2.target_pose.pose.orientation.y = 0.0
+        self.target2.target_pose.pose.orientation.z = 0.153404103418
+        self.target2.target_pose.pose.orientation.w = 0.98816353963
+
+        self.target3 = MoveBaseGoal()
+        self.target3.target_pose.header.frame_id = "map"
+        self.target3.target_pose.header.stamp = rospy.Time.now()
+        self.target3.target_pose.pose.position.x = 0.857642769587
+        self.target3.target_pose.pose.position.y = -3.15814141971
+        self.target3.target_pose.pose.orientation.x = 0.0
+        self.target3.target_pose.pose.orientation.y = 0.0
+        self.target3.target_pose.pose.orientation.z = 0.168549594567
+        self.target3.target_pose.pose.orientation.w = 0.985693174457
 
         self.callbacks = callbacks
-        self.led_pub = rospy.Publisher('/mobile_base/commands/led1', Led, queue_size=1)
+        self.cmd_vel_pub = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=1)
+        self.twist = Twist()
         self.clear_costmap = rospy.ServiceProxy('/move_base/clear_costmaps', Empty())
 
     def execute(self, userdata):
@@ -765,14 +818,20 @@ class Return(smach.State):
         while trig.get_distance(start_position, end_position) < 0.5:
             self.twist.linear.x = -0.4
             self.cmd_vel_pub.publish(self.twist)
+            end_position = self.callbacks.bot_odom_position
 
             if shutdown_requested:
                 return 'done4'
 
+        distance_from_box = trig.get_distance(self.callbacks.box_target_position, self.target1.target_pose.pose.position)
+        distance_from_bot = trig.get_distance(self.callbacks.bot_map_position, self.target1.target_pose.pose.position)
         self.clear_costmap()
-        self.client.send_goal(self.target0)
+        if distance_from_box > distance_from_bot:
+            self.client.send_goal(self.target1)
+            self.client.wait_for_result()
+        self.client.send_goal(self.target2)
         self.client.wait_for_result()
-        self.client.send_goal(self.target)
+        self.client.send_goal(self.target3)
         self.client.wait_for_result()
         print("Goal reached")
 

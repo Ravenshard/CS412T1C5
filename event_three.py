@@ -207,6 +207,7 @@ class RotateRight(smach.State):
                     previous_difference = difference
 
             if number_of_checks >= 3:
+                number_of_checks = 0  # For next circle
                 return 'success3'
             else:
                 return 'odom_follow'

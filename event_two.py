@@ -62,6 +62,7 @@ class RotateLeft(smach.State):
             #         previous_difference = difference
 
             if checked:
+                checked = False
                 return 'success2'
             else:
                 return 'follow'
