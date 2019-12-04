@@ -133,7 +133,7 @@ class FindMarkers(smach.State):
     def __init__(self, callbacks):
         smach.State.__init__(self, outcomes=['done4', 'box1', 'box2', 'box8', 'return'])
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.client.wait_for_server()
+        #self.client.wait_for_server()
 
         self.target = MoveBaseGoal()
         self.target.target_pose.header.frame_id = "map"
@@ -215,7 +215,7 @@ class MoveCloseToBox(smach.State):
         smach.State.__init__(self, outcomes=['done4', 'push', 'box1', 'return'])
         self.callbacks = callbacks
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.client.wait_for_server()
+        #self.client.wait_for_server()
         self.goal = MoveBaseGoal()
         self.clear_costmap = rospy.ServiceProxy('/move_base/clear_costmaps', Empty())
 
@@ -486,7 +486,7 @@ class Box2(smach.State):
     def __init__(self, callbacks):
         smach.State.__init__(self, outcomes=['done4', 'move_close_to_box'])
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.client.wait_for_server()
+        #self.client.wait_for_server()
 
         '''
         position: 
@@ -597,7 +597,7 @@ class Box5(smach.State):
     def __init__(self, callbacks):
         smach.State.__init__(self, outcomes=['done4', 'return', 'find_markers'])
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.client.wait_for_server()
+        #self.client.wait_for_server()
 
         '''
         position: 
@@ -659,7 +659,7 @@ class Box8(smach.State):
     def __init__(self, callbacks):
         smach.State.__init__(self, outcomes=['done4', 'move_close_to_box'])
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.client.wait_for_server()
+        #self.client.wait_for_server()
 
         '''
         position: 
@@ -759,6 +759,15 @@ class Return(smach.State):
 
     def execute(self, userdata):
         global shutdown_requested
+
+        start_position = self.callbacks.bot_odom_position
+        end_position = start_position
+        while trig.get_distance(start_position, end_position) < 0.5:
+            self.twist.linear.x = -0.4
+            self.cmd_vel_pub.publish(self.twist)
+
+            if shutdown_requested:
+                return 'done4'
 
         self.clear_costmap()
         self.client.send_goal(self.target0)

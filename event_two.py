@@ -36,7 +36,7 @@ class RotateLeft(smach.State):
         global checked
         while not shutdown_requested:
 
-            target_heading = (self.callbacks.bot_odom_heading + 80) % 360
+            target_heading = (self.callbacks.bot_odom_heading + 70) % 360
             val = turn(self, target_heading)
             if val != None: return val
             # turning = True

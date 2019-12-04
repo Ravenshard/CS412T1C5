@@ -17,18 +17,19 @@ red_mask = [['a']]
 bridge = cv_bridge.CvBridge()
 shutdown_requested = False
 h, w, d = 0, 0, 0
-# c1Triange = cv2.imread('./shapeTesting/c1Triangle.png', 0)
-# c2Triange = cv2.imread('./shapeTesting/c2Triangle.png', 0)
-# c1Square = cv2.imread('./shapeTesting/c1Square.png', 0)
-# c2Square = cv2.imread('./shapeTesting/c2Square.png', 0)
-# c1Circle = cv2.imread('./shapeTesting/c1Circle.png', 0)
-# c2Circle = cv2.imread('./shapeTesting/c2Circle.png', 0)
-c1Triange = cv2.imread('c1Triangle.png', 0)
+c1Triange = cv2.imread('./shapeTesting/c1Triangle.png', 0)
 c2Triange = cv2.imread('./shapeTesting/c2Triangle.png', 0)
-c1Square = cv2.imread('c1Square.png', 0)
+c1Square = cv2.imread('./shapeTesting/c1Square.png', 0)
 c2Square = cv2.imread('./shapeTesting/c2Square.png', 0)
-c1Circle = cv2.imread('c1Circle.png', 0)
+c1Circle = cv2.imread('./shapeTesting/c1Circle.png', 0)
 c2Circle = cv2.imread('./shapeTesting/c2Circle.png', 0)
+
+#c1Triange = cv2.imread('c1Triangle.png', 0)
+#c2Triange = cv2.imread('./shapeTesting/c2Triangle.png', 0)
+#c1Square = cv2.imread('c1Square.png', 0)
+#c2Square = cv2.imread('./shapeTesting/c2Square.png', 0)
+#c1Circle = cv2.imread('c1Circle.png', 0)
+#c2Circle = cv2.imread('./shapeTesting/c2Circle.png', 0)
 cntG = None
 cntR1 = None
 cntR2 = None
@@ -153,9 +154,12 @@ def logitechRed_callback(msg):
     image2, contours, hierarchy = cv2.findContours(thresh, 2, 1)
     if len(contours) > 0:
         cntR2 = contours[0]
-    # cv2.imshow("red window",blur)
-    # cv2.waitKey(3)
+
+    #print("logitechRed")
+    #cv2.imshow("log red window", blur)
+    #cv2.waitKey(3)
     return
+
 
 def cam1red_callback(msg):
     # print("callback")
@@ -165,17 +169,26 @@ def cam1red_callback(msg):
 
     h, w, d = image.shape
 
-    upper_red = numpy.array([177,255, 255])
-    lower_red = numpy.array([0, 150, 50])
-    red_mask = cv2.inRange(hsv, lower_red, upper_red)
+    h, w, d = image.shape
+    upper_red_a = numpy.array([20, 255, 255])
+    lower_red_a = numpy.array([0, 150, 50])
+    red_mask_a = cv2.inRange(hsv, lower_red_a, upper_red_a)
+
+    upper_red_b = numpy.array([255, 255, 255])
+    lower_red_b = numpy.array([150, 150, 50])
+    red_mask_b = cv2.inRange(hsv, lower_red_b, upper_red_b)
+    red_mask = cv2.bitwise_or(red_mask_a, red_mask_b)
     blur = cv2.medianBlur(red_mask, 7)
+    blur[0:int((3.5 / 10.0) * h), 0:w] = 0
+    blur[int((9.0 / 10.0) * h):h, 0:w] = 0
     thresh = cv2.threshold(blur, 250, 255, 0)[1]
     image2, contours, hierarchy = cv2.findContours(thresh, 2, 1)
     if len(contours) > 0:
         cntR1 = contours[0]
-    # cv2.imshow("red window",blur)
-    # cv2.waitKey(3)
-    return
+
+    #cv2.imshow("red window", blur)
+    #cv2.waitKey(3)
+    #return
 
 def cam1green_callback(msg):
     global bridge, green_mask, cntG
@@ -183,18 +196,23 @@ def cam1green_callback(msg):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     h, w, d = image.shape
-    upper_green = numpy.array([149, 255, 255])
-    lower_green = numpy.array([57, 80, 0])
+    upper_green = numpy.array([150, 255, 255])
+    lower_green = numpy.array([50, 80, 0])
     green_mask = cv2.inRange(hsv, lower_green, upper_green)
     blur = cv2.medianBlur(green_mask, 7)
-    blur[0:h / 4, 0:w] = 0
-    blur[3 * h / 4:h, 0:w] = 0
+    blur[0:int((3.0/10.0)*h), 0:w] = 0
+    blur[int((9.0/10.0)*h):h, 0:w] = 0
     green_mask = blur
     thresh = cv2.threshold(blur, 250, 255, 0)[1]
     image2, contours, hierarchy = cv2.findContours(thresh, 2, 1)
     # cntG = contours[0]
     if len(contours) > 0:
         cntG = contours[0]
+
+    #print("cam1green")
+    #cv2.imshow("green window", green_mask)  # TODO: remove
+    #cv2.waitKey(3)
+
     return
 
 def count_objects(mask, threshold=1000, canvas=None):

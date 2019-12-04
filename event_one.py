@@ -10,14 +10,15 @@ import numpy as np
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from kobuki_msgs.msg import Sound
+from kobuki_msgs.msg import Led
 import time
 import sys
 sys.path.insert(1, '/home/malcolm/Documents/CMPUT_412/Competition/CS412T1C5/shapeTesting')
 import v2
 
 
-
 global shutdown_requested
+
 
 class RotateLeft(smach.State):
 
@@ -67,21 +68,34 @@ class Count(smach.State):
         self.twist = Twist()
         self.cmd_vel_pub = rospy.Publisher('cmd_vel_mux/input/teleop', Twist, queue_size=1)
         self.sound_pub = rospy.Publisher('/mobile_base/commands/sound', Sound, queue_size=1)
+        self.led1_pub = rospy.Publisher('/mobile_base/commands/led1', Led, queue_size=1)
+        self.led2_pub = rospy.Publisher('/mobile_base/commands/led2', Led, queue_size=1)
 
     def execute(self, userdata):
         global shutdown_requested
         while not shutdown_requested:
             symbol_red_mask = self.callbacks.symbol_red_mask.copy()
-            symbol_red_mask[0:self.callbacks.main_h / 4, 0:self.callbacks.main_w] = 0
+            symbol_red_mask[0:self.callbacks.main_h / 2, 0:self.callbacks.main_w] = 0
             count = 0
             loopTotal = 10
             for i in range(loopTotal):
                 count += v2.count_objects(symbol_red_mask)
             real_count = math.ceil(count/loopTotal)
             print(real_count)
+
+            if real_count == 2:
+                self.led1_pub.publish(1)
+
+            if real_count == 3:
+                self.led1_pub.publish(1)
+                self.led2_pub.publish(1)
+
             for i in range(int(real_count)):
                 self.sound_pub.publish(1)
                 time.sleep(1)
+
+            self.led1_pub.publish(0)
+            self.led2_pub.publish(0)
             return 'rotate_right'
         return 'done1'
 

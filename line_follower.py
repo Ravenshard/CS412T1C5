@@ -46,7 +46,7 @@ class Wait(smach.State):
         global shutdown_requested
         self.led1_pub.publish(0)
         self.led2_pub.publish(0)
-        return 'follow_line'  # TODO: take out debug line
+        return 'follow_line' # TODO
         while not shutdown_requested:
             if self.callbacks.stopWaiting:
                 return 'follow_line'
@@ -94,6 +94,7 @@ class Stop(smach.State):
         global red_count
 
         red_count = (red_count + 1)
+        print ("red count "+ str(red_count))
 
         red_events = [1, 3]
         red_stops = [0, 2, 4, 5, 6]
@@ -152,7 +153,8 @@ class Stop(smach.State):
                 return 'event_two'
 
         if red_count in red_end:
-            return 'end'
+            red_count = 0
+            print("restarting")
 
         start = time.time()
         while time.time() - start < 5:
@@ -210,11 +212,12 @@ class FollowLine(smach.State):
 
                 RM = cv2.moments(bottom_red_mask)
                 if RM['m00'] > 0:
+                    rx = int(RM['m10'] / RM['m00'])
                     ry = int(RM['m01'] / RM['m00'])
-                    print(str(red_pixel_count)+" "+str(ry))
+                    #print(str(red_pixel_count)+" "+str(rx))
 
                     # Check special case of
-                    if red_pixel_count > 1000 and ry > 100 and red_count == 3:
+                    if red_pixel_count > 1000 and rx > 140 and red_count == 3:
                         print(red_pixel_count)
                         print(ry)
                         print("Red count 3 line found")
@@ -250,7 +253,6 @@ class FollowLine(smach.State):
                         self.prev_error = error
                     self.twist.linear.x = self.speed
                     self.twist.angular.z = rotation
-                    print("test")
                     self.cmd_vel_pub.publish(self.twist)
         return 'done'
 
@@ -371,18 +373,17 @@ class Callbacks:
         self.main_h, self.main_w, self.main_d = image.shape
 
         upper_red_a = numpy.array([20, 255, 255])
-        lower_red_a = numpy.array([0, 200, 60])
+        lower_red_a = numpy.array([0, 150, 50])
         red_mask_a = cv2.inRange(hsv, lower_red_a, upper_red_a)
 
         upper_red_b = numpy.array([255, 255, 255])
-        lower_red_b = numpy.array([150, 200, 60])
+        lower_red_b = numpy.array([150, 150, 50])
         red_mask_b = cv2.inRange(hsv, lower_red_b, upper_red_b)
+        self.symbol_red_mask = cv2.medianBlur(cv2.bitwise_or(red_mask_a, red_mask_b), 7)
 
-        self.symbol_red_mask = cv2.bitwise_or(red_mask_a, red_mask_b)
-
-        upper_green = numpy.array([136, 255, 255])
-        lower_green = numpy.array([56, 43, 90])
-        self.symbol_green_mask = cv2.inRange(hsv, lower_green, upper_green)
+        upper_green = numpy.array([150, 255, 255])
+        lower_green = numpy.array([50, 80, 0])
+        self.symbol_green_mask = cv2.medianBlur(cv2.inRange(hsv, lower_green, upper_green), 7)
 
         # TESTING STUFF BELOW
         '''
@@ -397,10 +398,10 @@ class Callbacks:
         symbol_green_mask[3 * h / 4:h, 0:w] = 0
 
         #shapes = detect_shape.detect_shape(symbol_green_mask)[0]
-
-        cv2.imshow("red symbol window", self.red_mask)
-        cv2.imshow("green symbol window", self.line_white_mask)
         '''
+        #cv2.imshow("red symbol window", self.symbol_red_mask)
+        #cv2.imshow("green symbol window", self.symbol_green_mask)
+
         cv2.waitKey(3)
 
     def secondary_image_callback(self, msg):
@@ -452,7 +453,7 @@ class Callbacks:
         #bottom_red_mask[search_bot:h, 0:w] = 0
 
         # print(cv2.sumElems(red_mask)[0] / 255)
-        #cv2.imshow("red window", bottom_red_mask)
+        #cv2.imshow("red window", self.red_mask)
         #cv2.imshow("white window", self.line_white_mask)
         cv2.waitKey(3)
 
@@ -465,12 +466,12 @@ def main():
     # TESTING STUFF BELOW
     event_two.previous_shape = "triangle"
 
-    #red_count = 0
-    #red_count = 1
-    red_count = 2  # Event 2
+    red_count = 0  # Event 1
+    #red_count = 1  # Finished event 1
+    #red_count = 2  # Event 2
     #red_count = 3  # Event four
     #red_count = 4  # Event 3
-    #red_count = 6  # Last stop
+    #red_count = 5  # Last stop
 
     button_start = False
 
