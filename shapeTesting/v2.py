@@ -180,7 +180,7 @@ def cam1red_callback(msg):
     red_mask = cv2.bitwise_or(red_mask_a, red_mask_b)
     blur = cv2.medianBlur(red_mask, 7)
     blur[0:int((3.5 / 10.0) * h), 0:w] = 0
-    blur[int((9.0 / 10.0) * h):h, 0:w] = 0
+    #blur[int((9.0 / 10.0) * h):h, 0:w] = 0
     thresh = cv2.threshold(blur, 250, 255, 0)[1]
     image2, contours, hierarchy = cv2.findContours(thresh, 2, 1)
     if len(contours) > 0:
@@ -201,7 +201,7 @@ def cam1green_callback(msg):
     green_mask = cv2.inRange(hsv, lower_green, upper_green)
     blur = cv2.medianBlur(green_mask, 7)
     blur[0:int((3.0/10.0)*h), 0:w] = 0
-    blur[int((9.0/10.0)*h):h, 0:w] = 0
+    #blur[int((9.0/10.0)*h):h, 0:w] = 0
     green_mask = blur
     thresh = cv2.threshold(blur, 250, 255, 0)[1]
     image2, contours, hierarchy = cv2.findContours(thresh, 2, 1)

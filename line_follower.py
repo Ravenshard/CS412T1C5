@@ -157,7 +157,7 @@ class Stop(smach.State):
             print("restarting")
 
         start = time.time()
-        while time.time() - start < 5:
+        while time.time() - start < 1:
             if shutdown_requested:
                 return 'done'
 

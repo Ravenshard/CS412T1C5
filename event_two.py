@@ -11,6 +11,7 @@ from sensor_msgs.msg import Image
 import numpy as np
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
+from kobuki_msgs.msg import Led
 from kobuki_msgs.msg import Sound
 import traceback
 
@@ -159,7 +160,6 @@ class Stop(smach.State):
         if not checked:
             distance = 0.1
         else:
-            print("THE DISTANCE IS 0.6")
             distance = 1.2
 
         while self.callbacks.bot_odom_position is None:
@@ -204,8 +204,8 @@ class Stop(smach.State):
             else:
                 self.twist.linear.x = 2.0
                 self.cmd_vel_pub.publish(self.twist)
-                if time.time() - start > 0.7:
-                    print("break")
+                if time.time() - start > 0.5:
+                    print("break") # BEFORE 0.7
                     break
 
         self.twist.linear.x = 0
@@ -226,6 +226,8 @@ class Check(smach.State):
         self.twist = Twist()
         self.cmd_vel_pub = rospy.Publisher('cmd_vel_mux/input/teleop', Twist, queue_size=1)
         self.sound_pub = rospy.Publisher('/mobile_base/commands/sound', Sound, queue_size=1)
+        self.led1_pub = rospy.Publisher('/mobile_base/commands/led1', Led, queue_size=1)
+        self.led2_pub = rospy.Publisher('/mobile_base/commands/led2', Led, queue_size=1)
 
     def execute(self, userdata):
         global shutdown_requested
@@ -237,16 +239,31 @@ class Check(smach.State):
                 symbol_green_mask = self.callbacks.symbol_green_mask.copy()
                 h = self.callbacks.main_h
                 w = self.callbacks.main_w
-                symbol_red_mask[0:h / 4, 0:w] = 0
-                symbol_red_mask[3 * h / 4:h, 0:w] = 0
-                symbol_green_mask[0:h / 4, 0:w] = 0
-                symbol_green_mask[3 * h / 4:h, 0:w] = 0
 
-                count = v2.count_objects(symbol_green_mask)
-                count += v2.count_objects(symbol_red_mask)
+                symbol_red_mask[0:int((3.5 / 10.0) * h), 0:w] = 0
+                symbol_green_mask[0:int((3.5 / 10.0) * h), 0:w] = 0
+
+                #symbol_red_mask[0:h / 4, 0:w] = 0
+                #symbol_red_mask[3 * h / 4:h, 0:w] = 0
+                #symbol_green_mask[0:h / 4, 0:w] = 0
+                #symbol_green_mask[3 * h / 4:h, 0:w] = 0
+
+                count = v2.count_objects(symbol_green_mask, threshold=1000)
+                count += v2.count_objects(symbol_red_mask, threshold=2000)
+
+                if count == 2:
+                    self.led1_pub.publish(1)
+
+                if count >= 3:
+                    self.led1_pub.publish(1)
+                    self.led2_pub.publish(1)
+
                 for i in range(int(count)):
                     self.sound_pub.publish(1)
                     time.sleep(1)
+
+                self.led1_pub.publish(0)
+                self.led2_pub.publish(0)
                 checked = True
 
                 #previous_shape = detect_shape.detect_shape(symbol_green_mask, h, w)

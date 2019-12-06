@@ -41,9 +41,9 @@ class OdomFollow(smach.State):
         global number_of_checks
 
         if number_of_checks == 0:
-            distance = 0.8
+            distance = 0.7  # Before 0.8
         else:
-            distance = 0.3
+            distance = 0.4  # Before 0.3
 
         while self.callbacks.bot_odom_position is None:
             time.sleep(1)
@@ -97,9 +97,18 @@ class RotateLeft(smach.State):
 
     def execute(self, userdata):
         global shutdown_requested
+        global number_of_checks
         while not shutdown_requested:
 
-            target_heading = (self.callbacks.bot_odom_heading + 90) % 360
+            if number_of_checks == 0:
+                target_heading = (self.callbacks.bot_odom_heading + 90) % 360
+                print("plus 80")
+            elif number_of_checks == 1:
+                target_heading = (self.callbacks.bot_odom_heading + 100) % 360
+                print("plus 100")
+            else:
+                target_heading = (self.callbacks.bot_odom_heading + 100) % 360
+                print("plus 110")
 
             turning = True
             previous_difference = None
@@ -180,9 +189,16 @@ class RotateRight(smach.State):
         global number_of_checks
         while not shutdown_requested:
 
-            target_heading = self.callbacks.bot_odom_heading - 90
-            if target_heading < 0:
-                target_heading = target_heading + 360
+            if number_of_checks == 1:
+                target_heading = self.callbacks.bot_odom_heading - 90
+                print("minus 80")
+            elif number_of_checks == 2:
+                target_heading = self.callbacks.bot_odom_heading - 100
+                print("minus 100")
+            else:
+                target_heading = self.callbacks.bot_odom_heading - 100
+                print("minus 110")
+            print("target heading:"+str(target_heading))
 
             turning = True
             previous_difference = None

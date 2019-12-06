@@ -473,6 +473,11 @@ class Box1(smach.State):
 
         if shape == event_two.previous_shape:
             self.led1_pub.publish(Led.GREEN)
+            self.sound_pub.publish(1)
+            time.sleep(1)
+            self.led1_pub.publish(0)
+            time.sleep(1)
+            self.led1_pub.publish(Led.GREEN)
             self.led2_pub.publish(Led.ORANGE)
             self.sound_pub.publish(1)
             time.sleep(1)
@@ -596,6 +601,11 @@ class Box4(smach.State):
 
         if shape == event_two.previous_shape:
             self.led1_pub.publish(Led.GREEN)
+            self.sound_pub.publish(1)
+            time.sleep(1)
+            self.led1_pub.publish(0)
+            time.sleep(1)
+            self.led1_pub.publish(Led.GREEN)
             self.led2_pub.publish(Led.ORANGE)
             self.sound_pub.publish(1)
             time.sleep(1)
@@ -633,8 +643,8 @@ class Box5(smach.State):
         self.target.target_pose.pose.position.y = -2.74567505632
         self.target.target_pose.pose.orientation.x = 0.0
         self.target.target_pose.pose.orientation.y = 0.0
-        self.target.target_pose.pose.orientation.z = 0.0851488643663
-        self.target.target_pose.pose.orientation.w = 0.99636824061
+        self.target.target_pose.pose.orientation.z = 0.117709681697
+        self.target.target_pose.pose.orientation.w = 0.993048050617
 
         self.callbacks = callbacks
         self.led1_pub = rospy.Publisher('/mobile_base/commands/led1', Led, queue_size=1)
@@ -657,6 +667,11 @@ class Box5(smach.State):
             shape = "triangle"
 
         if shape == event_two.previous_shape:
+            self.led1_pub.publish(Led.GREEN)
+            self.sound_pub.publish(1)
+            time.sleep(1)
+            self.led1_pub.publish(0)
+            time.sleep(1)
             self.led1_pub.publish(Led.GREEN)
             self.led2_pub.publish(Led.ORANGE)
             self.sound_pub.publish(1)
@@ -813,9 +828,17 @@ class Return(smach.State):
     def execute(self, userdata):
         global shutdown_requested
 
+        distance_from_box = trig.get_distance(self.callbacks.box_target_position,
+                                              self.target1.target_pose.pose.position)
+        distance_from_bot = trig.get_distance(self.callbacks.bot_map_position, self.target1.target_pose.pose.position)
+
         start_position = self.callbacks.bot_odom_position
         end_position = start_position
-        while trig.get_distance(start_position, end_position) < 0.5:
+        while trig.get_distance(start_position, end_position) < 0.4:
+            if distance_from_box > distance_from_bot:
+                self.twist.angular.z = -0.4
+            else:
+                self.twist.angular.z = 0.4
             self.twist.linear.x = -0.4
             self.cmd_vel_pub.publish(self.twist)
             end_position = self.callbacks.bot_odom_position
@@ -823,7 +846,8 @@ class Return(smach.State):
             if shutdown_requested:
                 return 'done4'
 
-        distance_from_box = trig.get_distance(self.callbacks.box_target_position, self.target1.target_pose.pose.position)
+        distance_from_box = trig.get_distance(self.callbacks.box_target_position,
+                                              self.target1.target_pose.pose.position)
         distance_from_bot = trig.get_distance(self.callbacks.bot_map_position, self.target1.target_pose.pose.position)
         self.clear_costmap()
         if distance_from_box > distance_from_bot:
