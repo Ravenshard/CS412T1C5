@@ -12,11 +12,8 @@ import math
 from sensor_msgs.msg import Image
 from enum import Enum
 
-green_mask = [['a']]
-red_mask = [['a']]
 bridge = cv_bridge.CvBridge()
 shutdown_requested = False
-h, w, d = 0, 0, 0
 c1Triange = cv2.imread('./shapeTesting/c1Triangle.png', 0)
 c2Triange = cv2.imread('./shapeTesting/c2Triangle.png', 0)
 c1Square = cv2.imread('./shapeTesting/c1Square.png', 0)
@@ -132,8 +129,7 @@ def shapeDetection(colour, camera, p=False):
 
 
 def logitechRed_callback(msg):
-    # print("callback")
-    global bridge, red_mask, h, w, d, cntR2
+    global bridge, cntR2
     image = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -155,15 +151,13 @@ def logitechRed_callback(msg):
     if len(contours) > 0:
         cntR2 = contours[0]
 
-    #print("logitechRed")
     #cv2.imshow("log red window", blur)
     #cv2.waitKey(3)
     return
 
 
 def cam1red_callback(msg):
-    # print("callback")
-    global bridge, red_mask, h, w, d, cntR1
+    global bridge, cntR1
     image = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -178,9 +172,9 @@ def cam1red_callback(msg):
     lower_red_b = numpy.array([150, 150, 50])
     red_mask_b = cv2.inRange(hsv, lower_red_b, upper_red_b)
     red_mask = cv2.bitwise_or(red_mask_a, red_mask_b)
+
     blur = cv2.medianBlur(red_mask, 7)
     blur[0:int((3.5 / 10.0) * h), 0:w] = 0
-    #blur[int((9.0 / 10.0) * h):h, 0:w] = 0
     thresh = cv2.threshold(blur, 250, 255, 0)[1]
     image2, contours, hierarchy = cv2.findContours(thresh, 2, 1)
     if len(contours) > 0:
@@ -188,10 +182,10 @@ def cam1red_callback(msg):
 
     #cv2.imshow("red window", blur)
     #cv2.waitKey(3)
-    #return
+    return
 
 def cam1green_callback(msg):
-    global bridge, green_mask, cntG
+    global bridge, cntG
     image = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -199,20 +193,16 @@ def cam1green_callback(msg):
     upper_green = numpy.array([150, 255, 255])
     lower_green = numpy.array([50, 80, 0])
     green_mask = cv2.inRange(hsv, lower_green, upper_green)
+    
     blur = cv2.medianBlur(green_mask, 7)
     blur[0:int((3.0/10.0)*h), 0:w] = 0
-    #blur[int((9.0/10.0)*h):h, 0:w] = 0
-    green_mask = blur
     thresh = cv2.threshold(blur, 250, 255, 0)[1]
     image2, contours, hierarchy = cv2.findContours(thresh, 2, 1)
-    # cntG = contours[0]
     if len(contours) > 0:
         cntG = contours[0]
 
-    #print("cam1green")
     #cv2.imshow("green window", green_mask)  # TODO: remove
     #cv2.waitKey(3)
-
     return
 
 def count_objects(mask, threshold=1000, canvas=None):
